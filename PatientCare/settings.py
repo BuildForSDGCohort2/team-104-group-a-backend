@@ -1,6 +1,4 @@
 import os
-from datetime import timedelta
-from rest_framework.settings import api_settings
 import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
