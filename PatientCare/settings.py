@@ -1,4 +1,6 @@
 import os
+from datetime import timedelta
+from rest_framework.settings import api_settings
 import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -26,9 +28,29 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    "knox",
+    "corsheaders",
     'backend.apps.BackendConfig',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        "knox.auth.TokenAuthentication",
+    ],
+    "DATETIME_FORMAT":"%d/%b/%Y %H:%M",
+}
+
+REST_KNOX = {
+  'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
+  'AUTH_TOKEN_CHARACTER_LENGTH': 64,
+  'TOKEN_TTL': timedelta(hours=12),
+  'USER_SERIALIZER': 'knox.serializers.UserSerializer',
+  'TOKEN_LIMIT_PER_USER': None,
+  'AUTO_REFRESH': False,
+  'EXPIRY_DATETIME_FORMAT': api_settings.DATETIME_FORMAT,
+}
+
+CORS_ORIGIN_WHITELIST=["http://127.0.0.1:3000","http://localhost:3000"]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -66,11 +88,14 @@ WSGI_APPLICATION = 'PatientCare.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'PatientCare',
+        'USER': 'root',
+        'HOST': 'localhost',
+        'PASSWORD': '',
+        'PORT': ''
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -109,6 +134,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'Static'),)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+AUTH_USER_MODEL = 'backend.User'
 
 
 django_heroku.settings(locals())
