@@ -1,10 +1,10 @@
 from django.contrib import admin
+from django import forms
 from django.contrib.auth import get_user_model
 Users=get_user_model()
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import User,Note,Temperature,Weight,BloodPressure,TestResult,MedicalData,Medication,Routine,Doctor,Patient
-from .form import ProductForm
 
 # Register your models here.
 
