@@ -16,18 +16,18 @@ import sys
 
 class UserManager(BaseUserManager):
     def create_user(self, email, UserID, first_name, last_name, gender, date_of_birth, image,
-                    phone_number='null', address="null", password=None):
+                    phone_number='null', address="null", licenseNumber="null", is_MP=False, password=None):
         if not email:
             raise ValueError('Users must have an email address')
         user = self.model(email=self.normalize_email(email), UserID=UserID, first_name=first_name, last_name=last_name, gender=gender,
-                          date_of_birth=date_of_birth, phone_number=phone_number, image=image, address=address)
+                          date_of_birth=date_of_birth, phone_number=phone_number, image=image, address=address, licenseNumber=licenseNumber, is_MP=is_MP)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password):
         user = self.create_user(email, password=password, UserID="null", first_name="TEAM", last_name="LEAD", gender="null",
-                                date_of_birth=datetime.date(1994, 11, 25), phone_number="null", address="null", image=None)
+                                date_of_birth=datetime.date(1994, 11, 25), phone_number="null", address="null", licenseNumber="null", image=None)
         user.is_admin = True
         user.staff = True
         user.save(using=self._db)
@@ -48,7 +48,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name='address', max_length=255, default="null")
     # remeber to link a default image
     image = models.ImageField(null=True, default="image not uploaded")
-    is_MP = models.BooleanField(default=False)
+    licenseNumber = models.CharField(
+        verbose_name="License number", max_length=150, default='null')
+    is_MP = models.BooleanField()
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     staff = models.BooleanField(default=False)
@@ -110,7 +112,7 @@ def delete_User_image(sender, instance, *args, **kwargs):
 
 
 @receiver(post_delete, sender=User)
-def delete_User_image(sender, instance, using, *args, **kwargs):
+def delete_User_Image(sender, instance, using, *args, **kwargs):
     if instance.image:
         instance.image.delete(save=False)
 
@@ -221,7 +223,7 @@ def delete_TestResult_image(sender, instance, *args, **kwargs):
 
 
 @receiver(post_delete, sender=TestResult)
-def delete_TestResult_image(sender, instance, using, *args, **kwargs):
+def delete_TestResult_Image(sender, instance, using, *args, **kwargs):
     if instance.testResult:
         instance.testResult.delete(save=False)
 
