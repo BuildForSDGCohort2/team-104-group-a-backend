@@ -16,10 +16,10 @@ class RegisterUser(generics.GenericAPIView):
     @classmethod
     def post(self, request, *args, **kwargs):
         formdata = request.data
-        print(formdata)
         serializer = UserSerializer(data=formdata)
         serializer.is_valid(raise_exception=True)
         userStatus = ""
+        doctorOrPatient = "patient"
         user = serializer.save()
         _, token = AuthToken.objects.create(user)
         returnedUser = GetUserSerializer(user)
@@ -30,6 +30,7 @@ class RegisterUser(generics.GenericAPIView):
             doctorSerializer.is_valid(raise_exception=True)
             doctor = doctorSerializer.save()
             userStatus = GetDoctorSerializer(doctor)
+            doctorOrPatient = "doctor"
         else:
             medicaldata = GetMedicalDataSerializer(
                 data={"user": returnedUser.data["id"]})
@@ -47,7 +48,7 @@ class RegisterUser(generics.GenericAPIView):
             patient = patientSerializer.save()
             userStatus = GetPatientSerializer(patient)
 
-        return Response({"user": returnedUser.data, "userStatus": userStatus.data, "token": token})
+        return Response({"user": returnedUser.data, doctorOrPatient: userStatus.data, "token": token})
 
 
 class LoginUser(generics.GenericAPIView):
