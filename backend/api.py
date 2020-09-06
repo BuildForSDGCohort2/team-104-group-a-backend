@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from rest_framework import generics
+from rest_framework import generics, permissions
 from knox.models import AuthToken
-from .models import User, Note, Temperature, Weight, BloodPressure, TestResult, MedicalData, Medication, Routine, Doctor, Patient
+from .models import Note, Temperature, Weight, BloodPressure, TestResult, MedicalData, Medication, Routine, Doctor, Patient
 from .serializers import (UserSerializer, GetUserSerializer, NoteSerializer, TemperatureSerializer,
                           WeightSerializer, BloodPressureSerializer, TestResultSerializer, MedicalDataSerializer,
                           GetMedicalDataSerializer, MedicationSerializer, RoutineSerializer, DoctorSerializer, GetDoctorSerializer,
@@ -67,3 +67,48 @@ class LoginUser(generics.GenericAPIView):
             patient = Patient.objects.get(patient=returnedUser.data["id"])
             userStatus = GetPatientSerializer(patient)
         return Response({"user": returnedUser.data, "userStatus": userStatus.data, "token": token})
+
+
+class AddMedicalData(generics.GenericAPIView):
+    serializer_class = MedicalDataSerializer
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def post(self, request, *args, **kwargs):
+        action = request.data["action"]
+        patientMedicalData = MedicalData.objects.get(
+            id=int(request.data["medicalData"]))
+
+        if action == "temperature":
+            temp = Temperature(
+                temperature=request.data["data"]["temperature"])
+            temp.save()
+            patientMedicalData.temperature.add(temp)
+            usertemp = patientMedicalData.temperature
+            temperature = TemperatureSerializer(usertemp, many=True)
+            return Response({"temperature": temperature.data})
+        elif action == "weight":
+            weight = Weight(
+                weight=request.data["data"]["weight"])
+            weight.save()
+            patientMedicalData.weight.add(weight)
+            userweight = patientMedicalData.weight
+            weights = WeightSerializer(userweight, many=True)
+            return Response({"weight": weights.data})
+        elif action == "bloodPressure":
+            bloodPressure = BloodPressure(
+                bloodPressure=request.data["data"]["bloodPressure"])
+            bloodPressure.save()
+            patientMedicalData.bloodPressure.add(bloodPressure)
+            userbloodPressure = patientMedicalData.bloodPressure
+            bloodPressures = BloodPressureSerializer(
+                userbloodPressure, many=True)
+            return Response({"bloodPressure": bloodPressures.data})
+        elif action == "testResult":
+            testResult = TestResult(
+                testResult=request.data["data"]["testResult"])
+            testResult.save()
+            patientMedicalData.testResult.add(testResult)
+            usertestResult = patientMedicalData.testResult
+            testResults = TestResultSerializer(
+                usertestResult, many=True)
+            return Response({"testResult": testResults.data})

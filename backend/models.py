@@ -188,44 +188,44 @@ class TestResult(models.Model):
     testResult = models.ImageField()
 
     def __str__(self):
-        return self.testResult
+        return str(self.testResult)
 
     class Meta:
         managed = True
         verbose_name = 'TestResult'
         verbose_name_plural = 'TestResults'
 
-    def save(self, *args, **kwargs):
+#     def save(self, *args, **kwargs):
 
-        if self.testResult:
-            im = Image.open(self.image)
-            width, height = im.size
-            output = BytesIO()
-            n = 0.5
-            Width = floor(width * n)
-            Height = floor(height * n)
-            if width > 1000:
-                im = im.resize((Width, Height))
-                im.save(output, format='JPEG', quality=100)
-                output.seek(0)
-                self.testResult = InMemoryUploadedFile(output, 'ImageField', "%s.jpg" % self.testResult.name.split(
-                    '.')[0], 'image/jpeg', sys.getsizeof(output), None)
+#         if self.testResult:
+#             im = Image.open(self.image)
+#             width, height = im.size
+#             output = BytesIO()
+#             n = 0.5
+#             Width = floor(width * n)
+#             Height = floor(height * n)
+#             if width > 1000:
+#                 im = im.resize((Width, Height))
+#                 im.save(output, format='JPEG', quality=100)
+#                 output.seek(0)
+#                 self.testResult = InMemoryUploadedFile(output, 'ImageField', "%s.jpg" % self.testResult.name.split(
+#                     '.')[0], 'image/jpeg', sys.getsizeof(output), None)
 
-        super().save(*args, **kwargs)
-
-
-@receiver(pre_save, sender=TestResult)
-def delete_TestResult_image(sender, instance, *args, **kwargs):
-    if instance.pk:
-        testResult = TestResult.objects.get(pk=instance.pk)
-        if testResult.testResult != instance.testResult:
-            testResult.testResult.delete(False)
+#         super().save(*args, **kwargs)
 
 
-@receiver(post_delete, sender=TestResult)
-def delete_TestResult_Image(sender, instance, using, *args, **kwargs):
-    if instance.testResult:
-        instance.testResult.delete(save=False)
+# @receiver(pre_save, sender=TestResult)
+# def delete_TestResult_image(sender, instance, *args, **kwargs):
+#     if instance.pk:
+#         testResult = TestResult.objects.get(pk=instance.pk)
+#         if testResult.testResult != instance.testResult:
+#             testResult.testResult.delete(False)
+
+
+# @receiver(post_delete, sender=TestResult)
+# def delete_TestResult_Image(sender, instance, using, *args, **kwargs):
+#     if instance.testResult:
+#         instance.testResult.delete(save=False)
 
 
 class MedicalData(models.Model):
@@ -239,7 +239,7 @@ class MedicalData(models.Model):
     testResult = models.ManyToManyField(TestResult, verbose_name="test result")
 
     def __str__(self):
-        return self.user
+        return str(self.user)
 
     class Meta:
         managed = True
@@ -293,7 +293,7 @@ class Patient(models.Model):
     notes = models.ManyToManyField(Note, verbose_name="notes")
 
     def __str__(self):
-        return self.patientID
+        return str(self.patientID)
 
     class Meta:
         managed = True
