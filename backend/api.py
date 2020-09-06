@@ -53,6 +53,7 @@ class RegisterUser(generics.GenericAPIView):
 class LoginUser(generics.GenericAPIView):
     serializer_class = LoginSerializer
 
+    @classmethod
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -73,6 +74,7 @@ class AddMedicalData(generics.GenericAPIView):
     serializer_class = MedicalDataSerializer
     permission_classes = [permissions.IsAuthenticated, ]
 
+    @classmethod
     def post(self, request, *args, **kwargs):
         action = request.data["action"]
         patientMedicalData = MedicalData.objects.get(

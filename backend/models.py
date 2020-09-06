@@ -4,7 +4,6 @@ from django.contrib.auth.models import (
 from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 import datetime
-import re
 from PIL import Image
 from math import floor
 from io import BytesIO

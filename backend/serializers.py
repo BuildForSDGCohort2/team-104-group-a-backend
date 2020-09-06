@@ -12,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
                   "email", "phone_number", "address", "image", "licenseNumber", "is_MP", "password"]
         extra_kwargs = {"password": {"write_only": True}}
 
+    @classmethod
     def create(self, validated_data):
         user = User.objects.create_user(email=validated_data["email"], UserID=validated_data["UserID"], first_name=validated_data["first_name"],
                                         last_name=validated_data["last_name"], gender=validated_data[
@@ -32,6 +33,7 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
+    @classmethod
     def validate(self, data):
         user = authenticate(**data)
 
