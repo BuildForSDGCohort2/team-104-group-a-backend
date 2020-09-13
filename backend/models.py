@@ -48,7 +48,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # remeber to link a default image
     image = models.ImageField(null=True, default="image not uploaded")
     licenseNumber = models.CharField(
-        verbose_name="License number", max_length=150, default='null')
+        verbose_name="License number", max_length=150, default='null',blank=True)
     is_MP = models.BooleanField()
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
