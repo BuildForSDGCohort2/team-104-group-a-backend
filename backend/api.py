@@ -56,19 +56,21 @@ class LoginUser(generics.GenericAPIView):
 
     @classmethod
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
         _, token = AuthToken.objects.create(user)
         returnedUser = GetUserSerializer(user)
         userStatus = ""
+        doctorOrPatient = "patient"
         if returnedUser.data["is_MP"]:
+            doctorOrPatient = "doctor"
             doctor = Doctor.objects.get(doctor=returnedUser.data["id"])
             userStatus = GetDoctorSerializer(doctor)
         else:
             patient = Patient.objects.get(patient=returnedUser.data["id"])
             userStatus = GetPatientSerializer(patient)
-        return Response({"user": returnedUser.data, "userStatus": userStatus.data, "token": token})
+        return Response({"user": returnedUser.data, doctorOrPatient: userStatus.data, "token": token})
 
 
 class AddMedicalData(generics.GenericAPIView):
