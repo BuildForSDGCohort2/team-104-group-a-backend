@@ -56,7 +56,7 @@ class LoginUser(generics.GenericAPIView):
 
     @classmethod
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
         _, token = AuthToken.objects.create(user)
