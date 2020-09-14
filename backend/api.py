@@ -117,3 +117,36 @@ class AddMedicalData(generics.GenericAPIView):
             testResults = TestResultSerializer(
                 usertestResult, many=True)
             return Response({"testResult": testResults.data})
+
+
+class SearchAddAndRemoveDoctor(generics.GenericAPIView):
+    serializer_class = DoctorSerializer
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    @classmethod
+    def post(self, request, *args, **kwargs):
+        action = request.data["action"]
+        data = request.data["doctorID"]
+
+        if action == "search":
+            doctors = Doctor.objects.filter(doctorID=data)
+            returnedData = DoctorSerializer(doctors, many=True)
+            return Response({"doctors": returnedData.data})
+        elif action == "add":
+            doctor = Doctor.objects.get(doctorID=data)
+            doctor.patients.add(request.user)
+            patient = Patient.objects.get(patient=request.user.id)
+            patient.aproved.add(doctor)
+            returnedData = GetPatientSerializer(patient)
+            docs = User.objects.filter(doctor__aproved=patient.id)
+            aproved = GetUserSerializer(docs, many=True)
+            return Response({"patient": returnedData.data, "aproved": aproved.data})
+        elif action == "remove":
+            doctor = Doctor.objects.get(doctorID=data)
+            doctor.patients.remove(request.user)
+            patient = Patient.objects.get(patient=request.user.id)
+            patient.aproved.remove(doctor)
+            returnedData = GetPatientSerializer(patient)
+            docs = User.objects.filter(doctor__aproved=patient.id)
+            aproved = GetUserSerializer(docs, many=True)
+            return Response({"patient": returnedData.data, "aproved": aproved.data})

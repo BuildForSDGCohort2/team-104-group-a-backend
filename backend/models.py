@@ -284,11 +284,12 @@ class Routine(models.Model):
 class Patient(models.Model):
     patientID = models.CharField(verbose_name='user ID', max_length=100)
     patient = models.ForeignKey(
-        User, related_name='patient', on_delete=models.CASCADE)
-    aproved = models.ManyToManyField(Doctor, verbose_name="patients")
+        User, verbose_name='name', related_name='patient', on_delete=models.CASCADE)
+    aproved = models.ManyToManyField(
+        Doctor, verbose_name="aproved", related_name="aproved")
     medicalData = models.ForeignKey(
         MedicalData, related_name='medicaldata', on_delete=models.CASCADE)
-    medication = models.ManyToManyField(Medication, verbose_name="patients")
+    medication = models.ManyToManyField(Medication, verbose_name="medication")
     notes = models.ManyToManyField(Note, verbose_name="notes")
 
     def __str__(self):
