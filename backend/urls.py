@@ -1,5 +1,6 @@
 from rest_framework import routers
-from .api import RegisterUser, LoginUser, AddMedicalData, SearchAddAndRemoveDoctor
+from .api import (RegisterUser, LoginUser, AddMedicalData, SearchAddAndRemoveDoctor,
+                  DoctorPatientManagement)
 from django.urls import path
 from knox import views as KnoxView
 
@@ -11,7 +12,9 @@ urlpatterns = [
     path('register', RegisterUser.as_view(), name="registerUser"),
     path('addmedicaldata', AddMedicalData.as_view(), name="addMedicalData"),
     path('sarad', SearchAddAndRemoveDoctor.as_view(),
-         name="searchAddAndRemoveDoctor")
+         name="searchAddAndRemoveDoctor"),
+    path('doctorpatientmanagement', DoctorPatientManagement.as_view(),
+         name="doctorPatientManagement")
 ]
 
 urlpatterns += router.urls

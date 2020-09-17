@@ -157,3 +157,61 @@ class SearchAddAndRemoveDoctor(generics.GenericAPIView):
             docs = User.objects.filter(doctor__aproved=patient.id)
             aproved = GetUserSerializer(docs, many=True)
             return Response({"patient": returnedData.data, "aproved": aproved.data})
+
+
+class DoctorPatientManagement(generics.GenericAPIView):
+    serializer_class = MedicalDataSerializer
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    @classmethod
+    def post(self, request, *args, **kwargs):
+        requestData = request.data
+        action = requestData["action"]
+        patient = Patient.objects.get(patientID=requestData["patientID"])
+        doctor = Doctor.objects.get(doctorID=request.user.UserID)
+
+        if doctor in patient.aproved.all():
+            if action == "addNote":
+                note = Note(
+                    title=requestData["title"], text=requestData["text"], sender=doctor, receiver=patient.patient)
+                note.save()
+                patient.notes.add(note)
+                notes = Note.objects.filter(sender=doctor.id)
+                returnedNotes = NoteSerializer(notes, many=True)
+                return Response({"notes": returnedNotes.data})
+            elif action == "addMedication":
+                medication = Medication(
+                    medicineName=requestData["medicineName"], dosagePerIntake=int(
+                        requestData["dosagePerIntake"]),
+                    timesPerDay=int(requestData["timesPerDay"]), hoursIntervalsPerDay=int(requestData["hoursIntervalsPerDay"]),
+                    totaldosage=int(requestData["totaldosage"]), sender=doctor, receiver=patient.patient)
+                medication.save()
+                patient.medication.add(medication)
+                medications = Medication.objects.filter(sender=doctor.id)
+                returnedMedication = MedicationSerializer(
+                    medications, many=True)
+                return Response({"medication": returnedMedication.data})
+            elif action == "getMedicaldata":
+                patientMedicalData = MedicalData.objects.get(
+                    user=patient.patient)
+                getData = requestData["get"]
+                if getData == "temperature":
+                    usertemp = patientMedicalData.temperature
+                    temperature = TemperatureSerializer(usertemp, many=True)
+                    return Response({"temperature": temperature.data})
+                elif getData == "weight":
+                    userweight = patientMedicalData.weight
+                    weights = WeightSerializer(userweight, many=True)
+                    return Response({"weight": weights.data})
+                elif getData == "bloodPressure":
+                    userbloodPressure = patientMedicalData.bloodPressure
+                    bloodPressures = BloodPressureSerializer(
+                        userbloodPressure, many=True)
+                    return Response({"bloodPressure": bloodPressures.data})
+                elif getData == "testResult":
+                    usertestResult = patientMedicalData.testResult
+                    testResults = TestResultSerializer(
+                        usertestResult, many=True)
+                    return Response({"testResult": testResults.data})
+        else:
+            return Response({"permissionDenied": "you don't have the permission to this patient data"})
