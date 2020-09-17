@@ -135,7 +135,12 @@ class Doctor(models.Model):
 class Note(models.Model):
     title = models.CharField(verbose_name="title", max_length=150)
     text = models.CharField(verbose_name="text", max_length=150)
-    sender = models.ManyToManyField(Doctor, verbose_name="sender")
+    sender = models.ForeignKey(
+        Doctor, verbose_name="sender", related_name="sender", on_delete=models.CASCADE)
+    receiver = models.ForeignKey(
+        User, verbose_name="receiver", related_name="receiver", on_delete=models.CASCADE)
+    created = models.DateTimeField(
+        verbose_name="created", auto_now=True)
 
     def __str__(self):
         return self.title
@@ -144,10 +149,13 @@ class Note(models.Model):
         managed = True
         verbose_name = 'Note'
         verbose_name_plural = 'Notes'
+        ordering = ['-created']
 
 
 class Temperature(models.Model):
     temperature = models.CharField(verbose_name="temperature", max_length=50)
+    created = models.DateTimeField(
+        verbose_name="created", auto_now=True)
 
     def __str__(self):
         return self.temperature
@@ -156,10 +164,13 @@ class Temperature(models.Model):
         managed = True
         verbose_name = 'Temperature'
         verbose_name_plural = 'Temperatures'
+        ordering = ['-created']
 
 
 class Weight(models.Model):
     weight = models.CharField(verbose_name="weight", max_length=50)
+    created = models.DateTimeField(
+        verbose_name="created", auto_now=True)
 
     def __str__(self):
         return self.weight
@@ -168,11 +179,14 @@ class Weight(models.Model):
         managed = True
         verbose_name = 'Weight'
         verbose_name_plural = 'Weights'
+        ordering = ['-created']
 
 
 class BloodPressure(models.Model):
     bloodPressure = models.CharField(
         verbose_name="blood pressure", max_length=50)
+    created = models.DateTimeField(
+        verbose_name="created", auto_now=True)
 
     def __str__(self):
         return self.bloodPressure
@@ -181,10 +195,13 @@ class BloodPressure(models.Model):
         managed = True
         verbose_name = 'BloodPressure'
         verbose_name_plural = 'BloodPressures'
+        ordering = ['-created']
 
 
 class TestResult(models.Model):
     testResult = models.ImageField()
+    created = models.DateTimeField(
+        verbose_name="created", auto_now=True)
 
     def __str__(self):
         return str(self.testResult)
@@ -193,38 +210,39 @@ class TestResult(models.Model):
         managed = True
         verbose_name = 'TestResult'
         verbose_name_plural = 'TestResults'
+        ordering = ['-created']
 
-#     def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
 
-#         if self.testResult:
-#             im = Image.open(self.image)
-#             width, height = im.size
-#             output = BytesIO()
-#             n = 0.5
-#             Width = floor(width * n)
-#             Height = floor(height * n)
-#             if width > 1000:
-#                 im = im.resize((Width, Height))
-#                 im.save(output, format='JPEG', quality=100)
-#                 output.seek(0)
-#                 self.testResult = InMemoryUploadedFile(output, 'ImageField', "%s.jpg" % self.testResult.name.split(
-#                     '.')[0], 'image/jpeg', sys.getsizeof(output), None)
+        if self.testResult:
+            im = Image.open(self.testResult)
+            width, height = im.size
+            output = BytesIO()
+            n = 0.5
+            Width = floor(width * n)
+            Height = floor(height * n)
+            if width > 1000:
+                im = im.resize((Width, Height))
+                im.save(output, format='JPEG', quality=100)
+                output.seek(0)
+                self.testResult = InMemoryUploadedFile(output, 'ImageField', "%s.jpg" % self.testResult.name.split(
+                    '.')[0], 'image/jpeg', sys.getsizeof(output), None)
 
-#         super().save(*args, **kwargs)
-
-
-# @receiver(pre_save, sender=TestResult)
-# def delete_TestResult_image(sender, instance, *args, **kwargs):
-#     if instance.pk:
-#         testResult = TestResult.objects.get(pk=instance.pk)
-#         if testResult.testResult != instance.testResult:
-#             testResult.testResult.delete(False)
+        super().save(*args, **kwargs)
 
 
-# @receiver(post_delete, sender=TestResult)
-# def delete_TestResult_Image(sender, instance, using, *args, **kwargs):
-#     if instance.testResult:
-#         instance.testResult.delete(save=False)
+@receiver(pre_save, sender=TestResult)
+def delete_TestResult_image(sender, instance, *args, **kwargs):
+    if instance.pk:
+        testResult = TestResult.objects.get(pk=instance.pk)
+        if testResult.testResult != instance.testResult:
+            testResult.testResult.delete(False)
+
+
+@receiver(post_delete, sender=TestResult)
+def delete_TestResult_Image(sender, instance, using, *args, **kwargs):
+    if instance.testResult:
+        instance.testResult.delete(save=False)
 
 
 class MedicalData(models.Model):
@@ -254,6 +272,10 @@ class Medication(models.Model):
     hoursIntervalsPerDay = models.IntegerField(
         verbose_name="hours intervals per day")
     totaldosage = models.IntegerField(verbose_name="total dosage")
+    sender = models.ForeignKey(
+        Doctor, verbose_name="sender", related_name="medicationsender", on_delete=models.CASCADE)
+    receiver = models.ForeignKey(
+        User, verbose_name="receiver", related_name="medicationreceiver", on_delete=models.CASCADE)
 
     def __str__(self):
         return self.medicineName
@@ -266,9 +288,9 @@ class Medication(models.Model):
 
 class Routine(models.Model):
     routine = models.CharField(verbose_name="routine", max_length=150)
-    start = models.TimeField(verbose_name="start",
-                             auto_now=False, auto_now_add=False)
-    end = models.TimeField(
+    start = models.DateTimeField(verbose_name="start",
+                                 auto_now=False, auto_now_add=False)
+    end = models.DateTimeField(
         verbose_name="end", auto_now=False, auto_now_add=False)
 
     def __str__(self):
@@ -284,11 +306,13 @@ class Routine(models.Model):
 class Patient(models.Model):
     patientID = models.CharField(verbose_name='user ID', max_length=100)
     patient = models.ForeignKey(
-        User, related_name='patient', on_delete=models.CASCADE)
-    aproved = models.ManyToManyField(Doctor, verbose_name="patients")
+        User, verbose_name='name', related_name='patient', on_delete=models.CASCADE)
+    aproved = models.ManyToManyField(
+        Doctor, verbose_name="aproved", related_name="aproved")
     medicalData = models.ForeignKey(
         MedicalData, related_name='medicaldata', on_delete=models.CASCADE)
-    medication = models.ManyToManyField(Medication, verbose_name="patients")
+    medication = models.ManyToManyField(
+        Medication, verbose_name="medication", related_name="medication")
     notes = models.ManyToManyField(Note, verbose_name="notes")
 
     def __str__(self):
